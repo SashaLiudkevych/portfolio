@@ -2,15 +2,18 @@ import * as THREE from "three";
 
 // Створення камери
 export function createCamera() {
+  const isMobile = window.innerWidth < 768;
+  const initialFov = isMobile ? 90 : 70;
+
   const camera = new THREE.PerspectiveCamera(
-    75,
+    initialFov,
     window.innerWidth / window.innerHeight,
     0.1,
     10000
   );
 
-  const baseCameraPosition = new THREE.Vector3(-2.23, 1.15, 4.30);
-const cameraTarget = new THREE.Vector3(1.06, 1.79, -2.40);
+  const baseCameraPosition = new THREE.Vector3(-2.34, 1.40, 4.19);
+  const cameraTarget = new THREE.Vector3(1.90, 2.04, -1.95);
   
   camera.position.copy(baseCameraPosition);
   camera.lookAt(cameraTarget);
@@ -34,6 +37,10 @@ export function createRenderer() {
 // Обробка зміни розміру вікна
 export function setupResizeHandler(camera, renderer, composer) {
   window.addEventListener("resize", () => {
+    // Автоматично адаптуємо FOV при переході між мобільним та десктопним режимами (наприклад, при повороті екрана)
+    const isMobile = window.innerWidth < 768;
+    camera.fov = isMobile ? 90 : 70;
+
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);

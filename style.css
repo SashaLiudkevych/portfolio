@@ -79,7 +79,7 @@ canvas {
   display: flex; 
   flex-direction: column; 
   justify-content: space-between; 
-  padding: 40px; 
+  padding: 30px 40px; 
   pointer-events: none; 
 } 
 
@@ -88,6 +88,8 @@ header {
   justify-content: space-between; 
   align-items: center; 
   pointer-events: auto; 
+  flex-wrap: wrap;
+  gap: 15px;
 } 
 
 .logo { 
@@ -101,29 +103,32 @@ header {
 /* Навігація */
 .nav-menu {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 6px;
   border-radius: 30px;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .nav-link {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 8px 18px;
+  color: rgba(12, 12, 12, 0.7);
+  padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.85rem;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
-  color: #ffffff;
+  color: #050505;
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -161,6 +166,7 @@ header {
   letter-spacing: 1px; 
   cursor: pointer; 
   transition: all 0.3s ease; 
+  white-space: nowrap;
 } 
 
 .clay-btn:hover { 
@@ -178,7 +184,7 @@ header {
 /* Контентні вкладки */
 .content-container {
   position: absolute;
-  inset: 100px 40px 40px 40px;
+  inset: 120px 40px 40px 40px;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -195,6 +201,9 @@ header {
   transition: opacity 0.4s ease, transform 0.4s ease;
   transform: translateY(20px);
   pointer-events: none;
+  overflow-y: auto;
+  max-height: 100%;
+  padding-bottom: 20px;
 }
 
 .tab-pane.active {
@@ -227,14 +236,17 @@ header {
   font-size: 1rem;
   line-height: 1.6;
   margin-bottom: 25px;
+  padding: 6px 12px;
+  border-radius: 6px;
 }
 
 /* Стилі для Projects */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   max-width: 900px;
+  width: 100%;
   pointer-events: auto;
 }
 
@@ -290,92 +302,108 @@ header {
   border-radius: 20px;
   padding: 40px;
   max-width: 500px;
+  width: 100%;
   pointer-events: auto;
   gap: 8px;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .info-card h2 {
-  color: #ffffff;
+  color: #0a0a0a;
   font-size: 2rem;
   margin-bottom: 15px;
 }
 
 .info-card p {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(10, 10, 10, 0.75);
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 15px;
 }
 
-/* Модальне вікно без затінення і розмиття фону */
+/* Модальне вікно (мініатюрне, в кутку, без затемнення екрана) */
 #shopModal.modal-overlay {
   position: fixed;
-  top: 0;
-  left: 300px;
-  width: 100vw;
-  height: 100vh;
-  background: transparent; /* Без затемнення */
-  /* backdrop-filter та інші ефекти розмиття повністю прибрані */
+  top: 80px;
+  right: 20px;
+  bottom: auto;
+  left: auto;
+  background: transparent; 
   z-index: 1000;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-end;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none; /* Пропускає кліки крізь оверлей, коли модалка закрита */
+  pointer-events: none; 
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 0;
 }
 
 #shopModal.modal-overlay.active {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto; /* Дозволяє взаємодіяти тільки з самою модалкою, коли вона відкрита */
+  pointer-events: auto; 
 }
 
 #shopModal.modal-overlay .modal-content {
   position: relative;
-  transform: translateX(100px) scale(0.95);
+  transform: scale(0.9);
+  transform-origin: top right;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 30px;
+  padding: 14px 12px 12px 12px;
   border-radius: 12px;
-  width: 400px;
+  width: 220px;
+  max-width: 100%;
   box-sizing: border-box;
   pointer-events: auto;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(35, 40, 69, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
 
 #shopModal.modal-overlay.active .modal-content {
-  transform: translateX(100px) scale(1);
+  transform: scale(1);
 }
 
 .close-btn {
   position: absolute;
-  top: 10px; 
-  right: 15px;
-  background: none; 
+  top: 6px; 
+  right: 6px;
+  background: rgba(255, 255, 255, 0.08); 
   border: none;
   color: #fff; 
-  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .shop-btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  padding: 6px 10px;
   background: #2AD4B4;
   color: #111;
   text-decoration: none;
   border-radius: 6px;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.8rem;
   transition: background 0.2s;
 }
 
@@ -384,7 +412,7 @@ header {
 }
 
 .logo-btn {
-  color: #ffffff;
+  color: #070707;
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 2px;
@@ -399,4 +427,94 @@ header {
 .logo-btn:hover {
   color: #2AD4B4;
   transform: translateY(-1px);
+}
+
+/* Медіа-запити для мобільних пристроїв */
+@media (max-width: 768px) {
+  .ui-overlay {
+    padding: 16px;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .header-right {
+    justify-content: space-between;
+  }
+
+  .nav-menu {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .content-container {
+    inset: 140px 16px 20px 16px;
+    align-items: flex-start;
+  }
+
+  .tab-pane#home {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  .hero-content {
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hero-content h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    padding: 10px 14px;
+    text-align: center;
+    background: rgba(15, 20, 35, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    letter-spacing: -0.5px;
+  }
+
+  .hero-content p {
+    position: static;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    padding: 8px 12px;
+    text-align: center;
+    background: rgba(15, 20, 35, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+  }
+
+  .hero-content .clay-btn {
+    align-self: center;
+    margin-bottom: 0;
+    padding: 6px 14px;
+    font-size: 0.80rem;
+  }
+
+  .info-card {
+    padding: 25px;
+  }
+
+  /* На мобільних мініатюрне вікно магазину зсуваємо трохи нижче шапки, щоб не перекривати меню */
+  #shopModal.modal-overlay {
+    color: #faf9f9;
+    top: 120px;
+    right: 16px;
+  }
 }

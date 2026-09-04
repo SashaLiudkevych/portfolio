@@ -155,6 +155,19 @@ const currentLookAt = cameraTarget.clone();
 // Налаштування модального вікна (бічної панелі) та інтерактиву
 const interactivity = setupInteractivity(scene, camera, renderer, (matchedConfig, center, maxDim) => {
   const shopModal = document.getElementById("shopModal");
+
+  // Зупиняємо розповсюдження кліків усередині самого вікна, 
+// щоб вони не тригерили 3D-сцену під ним
+const modalContent = shopModal.querySelector(".modal-content");
+if (modalContent) {
+  modalContent.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+  modalContent.addEventListener("touchend", (e) => {
+    e.stopPropagation();
+  });
+}
+
   document.getElementById("modalTitle").textContent = matchedConfig.title;
   document.getElementById("modalDesc").textContent = matchedConfig.description;
   document.getElementById("modalLink").href = matchedConfig.shopUrl;
