@@ -1,0 +1,100 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  <head> 
+    <meta charset="UTF-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+    <title>Sasha Liudkevych | Architecture Portfolio</title> 
+    <link rel="stylesheet" href="style.css">
+  </head> 
+  <body> 
+    <div id="loader-screen"> 
+      <div class="loader-title">Loading Scene</div> 
+      <div class="loader-progress-container"> 
+        <div class="loader-progress-bar" id="loaderProgressBar"></div> 
+      </div> 
+      <div class="loader-percentage" id="loaderPercentage">0%</div> 
+    </div> 
+
+    <div class="ui-overlay"> 
+      <header> 
+        <div class="logo">Sasha Liudkevych</div> 
+        
+        <nav class="nav-menu">
+          <button class="nav-link active" data-tab="home">Home</button>
+          <button class="nav-link" data-tab="projects">Projects</button>
+          <button class="nav-link" data-tab="about">About me</button>
+          <button class="nav-link" data-tab="contacts">Contacts</button>
+        </nav>
+
+        <div class="header-right"> 
+          <div class="badge">Architecture 3D</div> 
+          <button class="clay-btn" id="clayToggleBtn">Clay Mode</button> 
+        </div> 
+      </header> 
+
+      <div class="content-container">
+        <div class="tab-pane active" id="tab-home">
+          <div class="hero-content">
+            <h1>Immersive 3D Architecture</h1>
+            <p>Exploring the boundaries of space, light, and material through interactive 3D web environments and modern design.</p>
+            <button class="clay-btn" onclick="switchTab('projects')">View Projects</button>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="tab-projects">
+          <div class="projects-grid">
+            <a href="#" class="project-card">
+              <div>
+                <h3>Villa Oasis</h3>
+                <p>Minimalist modern architecture concept focusing on open water integration.</p>
+              </div>
+              <span class="project-tag">3D Scene 01</span>
+            </a>
+            <a href="#" class="project-card">
+              <div>
+                <h3>Glass Pavilion</h3>
+                <p>Transparent structural study utilizing advanced physical lighting.</p>
+              </div>
+              <span class="project-tag">3D Scene 02</span>
+            </a>
+            <a href="#" class="project-card">
+              <div>
+                <h3>Urban Terrace</h3>
+                <p>High-rise conceptual design with parametric landscape integration.</p>
+              </div>
+              <span class="project-tag">3D Scene 03</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="tab-about">
+          <div class="info-card">
+            <h2>About Me</h2>
+            <p>Hi, I am Sasha Liudkevych, an architectural designer and 3D web developer focused on bringing spatial concepts to life inside the browser.</p>
+            <p>Combining classical architectural principles with cutting-edge WebGL and real-time physics simulation.</p>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="tab-contacts">
+          <div class="info-card">
+            <h2>Get in Touch</h2>
+            <p>Interested in collaboration or architectural 3D visualization projects? Let's build something unique together.</p>
+            <p><strong>Email:</strong> sasha.liudkevych@example.com</p>
+            <p><strong>Telegram / Socials:</strong> @sashaliudkevych</p>
+          </div>
+        </div>
+      </div>
+    </div> 
+
+    <script type="importmap"> 
+      { 
+        "imports": { 
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", 
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/", 
+          "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js" 
+        } 
+      } 
+    </script> 
+    <script type="module" src="main.js"></script> 
+  </body> 
+</html>
