@@ -26,20 +26,43 @@ function createWaterNoiseTexture() {
   return texture;
 }
 
+// Процедурна текстура вертикального градієнта для імітації глибини
+function createWaterGradientTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  // Зверху світліше/прозоріше, знизу глибокий темний відтінок
+  const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+  gradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)'); // Верх
+  gradient.addColorStop(0.5, 'rgba(120, 220, 200, 0.9)'); // Середина
+  gradient.addColorStop(1.0, 'rgba(15, 85, 95, 0.8)');    // Дно (темніше)
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 1, 256);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  return texture;
+}
+
 export const waterBumpTexture = createWaterNoiseTexture();
+const waterGradientTexture = createWaterGradientTexture();
 
 export const waterMaterial = new THREE.MeshPhysicalMaterial({
   color: 0x2AD4B4,
   metalness: 0.1,
   roughness: 0.1,
   transmission: 0.8,
-  thickness: 1.0,
-  ior: 1,
+  thickness: 1.5,
+  ior: 1.1,
   envMapIntensity: 2,
   bumpMap: waterBumpTexture,
   bumpScale: 0.7,
+  // Використовуємо alphaMap для красивого переходу щільності від верху до дна
+  alphaMap: waterGradientTexture,
   transparent: true,
-  opacity: 0.85,
+  opacity: 0.8,
   depthWrite: false
 });
 
@@ -57,10 +80,10 @@ export const glassMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 export const globalClayMaterial = new THREE.MeshStandardMaterial({
-  color: 0x6e6e6e,
-  roughness: 0.85,
-  metalness: 0.05,
-  side: THREE.DoubleSide
+  color: 0x4D4D4D,
+  roughness: 0.9,
+  metalness: 0.1,
+  envMapIntensity: 0.01 // Значно зменшує відбиття середовища в режимі глини
 });
 
 // Налаштування перемикача режиму глини

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Camera Inspector & Setup Tool</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: monospace; background: #0f111a; color: #fff; }
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 17, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+            width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h3 { margin: 0 0 12px 0; font-size: 16px; color: #818cf8; letter-spacing: 0.5px; }
+        .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+        .val { color: #34d399; font-weight: bold; }
+        .highlight { color: #fbbf24; }
+        hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 12px 0; }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            font-family: monospace;
+            transition: background 0.2s;
+            margin-top: 6px;
+        }
+        button:hover { background: #4338ca; }
+        button.secondary { background: #334155; }
+        button.secondary:hover { background: #1e293b; }
+        #instructions { font-size: 11px; color: #94a3b8; margin-top: 10px; line-height: 1.4; }
+    </style>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+<body>
+
+    <div id="hud">
+        <h3>Camera Inspector Tool</h3>
+        <div class="row"><span>Object Name:</span> <span id="objName" class="highlight">Click on an object</span></div>
+        <hr>
+        <div class="row"><span>Camera X:</span> <span id="camX" class="val">0.00</span></div>
+        <div class="row"><span>Camera Y:</span> <span id="camY" class="val">0.00</span></div>
+        <div class="row"><span>Camera Z:</span> <span id="camZ" class="val">0.00</span></div>
+        <hr>
+        <div class="row"><span>Target X:</span> <span id="tarX" class="val">0.00</span></div>
+        <div class="row"><span>Target Y:</span> <span id="tarY" class="val">0.00</span></div>
+        <div class="row"><span>Target Z:</span> <span id="tarZ" class="val">0.00</span></div>
+        <hr>
+        <div class="row"><span>camOffset:</span> <span id="calcOffset" class="val">{ x: 0, y: 0, z: 0 }</span></div>
+        <button id="copyBtn">Copy Config for Object</button>
+        <button id="copyBaseBtn" class="secondary">Copy Base Camera Setup</button>
+        <div id="instructions">
+            <b>OrbitControls active:</b> LMB — rotate, RMB — pan, Scroll — zoom.<br>
+            Clicking an object selects it for offset calculation without moving the camera.
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "three";
+        import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+        import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+        import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+
+        // Scene, camera, renderer
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1e2338);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        
+        // Стартова камера
+        const baseCameraPosition = new THREE.Vector3(-2.09, 1.40, 4.35);
+        const cameraTarget = new THREE.Vector3(1.90, 2.04, -1.95);
+
+        camera.position.copy(baseCameraPosition);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.appendChild(renderer.domElement);
+
+        // Connect OrbitControls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.copy(cameraTarget);
+        controls.update();
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+
+        // Orientation grid
+        const grid = new THREE.GridHelper(20, 20, 0x4f46e5, 0x334155);
+        grid.position.y = -0.01;
+        scene.add(grid);
+
+        // Selection variables
+        let selectedObject = null;
+        let objectCenter = new THREE.Vector3();
+        let objectMaxDim = 1;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let loadedModelRoot = null;
+
+        // Model loading
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
+
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+        loader.load(
+            "./glb_export/Architecture_landing.glb",
+            (gltf) => {
+                loadedModelRoot = gltf.scene;
+                scene.add(loadedModelRoot);
+                console.log("Model successfully loaded into the inspector.");
+            },
+            undefined,
+            (error) => console.error("Error loading GLB:", error)
+        );
+
+        // Mouse click to select object only (camera/target untouched)
+        window.addEventListener("click", (event) => {
+            if (!loadedModelRoot) return;
+            // Ignore clicks on HUD control panel
+            if (event.clientX < 420 && event.clientY < 420) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(loadedModelRoot.children, true);
+
+            if (intersects.length > 0) {
+                const hit = intersects[0];
+                selectedObject = hit.object;
+
+                document.getElementById("objName").textContent = selectedObject.name || "Unnamed (Mesh)";
+                
+                // Calculate bounding box of the mesh for offset calculations
+                const box = new THREE.Box3().setFromObject(selectedObject);
+                box.getCenter(objectCenter);
+                const size = box.getSize(new THREE.Vector3());
+                objectMaxDim = Math.max(size.x, size.y, size.z);
+            }
+        });
+
+        // UI elements
+        const elCamX = document.getElementById("camX");
+        const elCamY = document.getElementById("camY");
+        const elCamZ = document.getElementById("camZ");
+        const elTarX = document.getElementById("tarX");
+        const elTarY = document.getElementById("tarY");
+        const elTarZ = document.getElementById("tarZ");
+        const elCalcOffset = document.getElementById("calcOffset");
+
+        let calculatedCamOffsetStr = "{ x: 1.5, y: 0.6, z: 2.0 }";
+
+        function updateHUD() {
+            elCamX.textContent = camera.position.x.toFixed(2);
+            elCamY.textContent = camera.position.y.toFixed(2);
+            elCamZ.textContent = camera.position.z.toFixed(2);
+
+            elTarX.textContent = controls.target.x.toFixed(2);
+            elTarY.textContent = controls.target.y.toFixed(2);
+            elTarZ.textContent = controls.target.z.toFixed(2);
+
+            if (selectedObject) {
+                const offsetX = (camera.position.x - objectCenter.x) / objectMaxDim;
+                const offsetY = (camera.position.y - objectCenter.y) / objectMaxDim;
+                const offsetZ = (camera.position.z - objectCenter.z) / objectMaxDim;
+
+                calculatedCamOffsetStr = `camOffset: { x: ${offsetX.toFixed(2)}, y: ${offsetY.toFixed(2)}, z: ${offsetZ.toFixed(2)} }`;
+                elCalcOffset.textContent = `{ x: ${offsetX.toFixed(2)}, y: ${offsetY.toFixed(2)}, z: ${offsetZ.toFixed(2)} }`;
+            }
+        }
+
+        document.getElementById("copyBtn").addEventListener("click", () => {
+            const textToCopy = `meshName: "${selectedObject ? selectedObject.name : 'model'}",\n${calculatedCamOffsetStr}`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Copied object config to clipboard:\n" + textToCopy);
+            });
+        });
+
+        document.getElementById("copyBaseBtn").addEventListener("click", () => {
+            const textToCopy = `const baseCameraPosition = new THREE.Vector3(${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)});\nconst cameraTarget = new THREE.Vector3(${controls.target.x.toFixed(2)}, ${controls.target.y.toFixed(2)}, ${controls.target.z.toFixed(2)});`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Copied base camera setup to clipboard:\n" + textToCopy);
+            });
+        });
+
+        // Window resize responsiveness
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Standard render loop with independent OrbitControls
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            updateHUD();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

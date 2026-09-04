@@ -9,8 +9,8 @@ export function createCamera() {
     10000
   );
 
-  const baseCameraPosition = new THREE.Vector3(-2.09, 1.40, 4.35);
-  const cameraTarget = new THREE.Vector3(1.90, 2.04, -1.95);
+  const baseCameraPosition = new THREE.Vector3(-2.23, 1.15, 4.30);
+const cameraTarget = new THREE.Vector3(1.06, 1.79, -2.40);
   
   camera.position.copy(baseCameraPosition);
   camera.lookAt(cameraTarget);

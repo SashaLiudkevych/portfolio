@@ -8,6 +8,7 @@ import { createCamera, createRenderer, setupResizeHandler } from "./js/camera.js
 import { setupEnvironment } from "./js/lights.js";
 import { waterMaterial, glassMaterial, globalClayMaterial, waterBumpTexture, setupClayToggle } from "./js/materials.js";
 import { setupPostProcessing } from "./js/effects.js";
+import { setupInteractivity } from "./js/interactive.js";
 
 // Логіка перемикання вкладок інтерфейсу
 window.switchTab = function(tabId) {
@@ -108,7 +109,7 @@ const allLoadedMeshes = [];
 const meshOriginalMaterials = new Map();
 const meshClayMaterials = new Map();
 const interiorMeshes = [];
-const palmMeshes = [];
+const palmDataList = [];
 
 function initExistingBall(ballMesh) {
   if (singleBallData) return;
@@ -145,7 +146,36 @@ setupEnvironment(renderer, scene, (progress) => {
 // Керування матеріалами та глиною
 const clayController = setupClayToggle();
 
-// Слухач миші для паралаксу
+// Змінні для плавного зуму камери під кастомні ракурси
+let isZoomedToModel = false;
+let targetZoomPosition = new THREE.Vector3();
+let targetZoomLookAt = new THREE.Vector3();
+const currentLookAt = cameraTarget.clone();
+
+// Налаштування модального вікна (бічної панелі) та інтерактиву
+const interactivity = setupInteractivity(scene, camera, renderer, (matchedConfig, center, maxDim) => {
+  const shopModal = document.getElementById("shopModal");
+  document.getElementById("modalTitle").textContent = matchedConfig.title;
+  document.getElementById("modalDesc").textContent = matchedConfig.description;
+  document.getElementById("modalLink").href = matchedConfig.shopUrl;
+  
+  shopModal.classList.add("active");
+
+  const camOffset = matchedConfig.camOffset || { x: 1.5, y: 0.6, z: 2.0 };
+  const targetOffset = matchedConfig.targetOffset || { x: 0, y: 0, z: 0 };
+
+  targetZoomLookAt.copy(center).add(new THREE.Vector3(targetOffset.x, targetOffset.y, targetOffset.z));
+  targetZoomPosition.copy(center).add(new THREE.Vector3(maxDim * camOffset.x, maxDim * camOffset.y, maxDim * camOffset.z));
+  isZoomedToModel = true;
+});
+
+// Кнопка закриття бічної панелі
+document.getElementById("closeModalBtn").addEventListener("click", () => {
+  document.getElementById("shopModal").classList.remove("active");
+  isZoomedToModel = false;
+});
+
+// Слухач миші для паралаксу камери
 const mouse = new THREE.Vector2(-1000, -1000);
 const targetCameraOffset = new THREE.Vector2(0, 0);
 const currentCameraOffset = new THREE.Vector2(0, 0);
@@ -224,13 +254,18 @@ loader.load(
             });
 
             const geometry = child.geometry;
-            if (geometry && !geometry.userData.originalPosition) {
+            if (geometry) {
               geometry.computeBoundingBox();
-              geometry.userData.originalPosition = geometry.attributes.position.array.slice();
-              geometry.userData.minY = geometry.boundingBox.min.y;
-              geometry.userData.maxY = geometry.boundingBox.max.y;
+              const posAttr = geometry.attributes.position;
+              const originalPosition = new Float32Array(posAttr.array);
+              
+              palmDataList.push({
+                posAttr,
+                originalPosition,
+                minY: geometry.boundingBox.min.y,
+                heightRange: (geometry.boundingBox.max.y - geometry.boundingBox.min.y) > 0 ? (geometry.boundingBox.max.y - geometry.boundingBox.min.y) : 1
+              });
             }
-            palmMeshes.push(child);
           }
           else if (meshName.includes("interior") || meshName.includes("room") || meshName.includes("light")) {
             const oldMat = child.material;
@@ -252,9 +287,13 @@ loader.load(
           } 
           else {
             const oldMat = child.material;
-            assignedMaterial = new THREE.MeshBasicMaterial({
+            assignedMaterial = new THREE.MeshStandardMaterial({
               map: oldMat.map || null,
-              color: oldMat.color || new THREE.Color(0xffffff)
+              color: oldMat.color || new THREE.Color(0xffffff),
+              roughness: 0.5,
+              metalness: 0.1,
+              emissive: new THREE.Color(0x000000),
+              emissiveIntensity: 0
             });
           }
 
@@ -280,6 +319,8 @@ loader.load(
     glbProgress = 100;
     updateOverallProgress();
   }
+
+  
 );
 
 // Головний анімаційний цикл
@@ -290,12 +331,24 @@ const fixedTimeStep = 1 / 60;
 function animate() {
   requestAnimationFrame(animate);
 
-  // Паралакс камери
-  currentCameraOffset.lerp(targetCameraOffset, 0.05);
-  camera.position.x = baseCameraPosition.x + currentCameraOffset.x;
-  camera.position.y = baseCameraPosition.y + currentCameraOffset.y;
-  camera.position.z = baseCameraPosition.z;
-  camera.lookAt(cameraTarget);
+  interactivity.update();
+
+  // Анімація камери
+  if (isZoomedToModel) {
+    camera.position.lerp(targetZoomPosition, 0.05);
+    currentLookAt.lerp(targetZoomLookAt, 0.05);
+    camera.lookAt(currentLookAt);
+  } else {
+    currentCameraOffset.lerp(targetCameraOffset, 0.05);
+    const targetCamPos = new THREE.Vector3(
+      baseCameraPosition.x + currentCameraOffset.x,
+      baseCameraPosition.y + currentCameraOffset.y,
+      baseCameraPosition.z
+    );
+    camera.position.lerp(targetCamPos, 0.05);
+    currentLookAt.lerp(cameraTarget, 0.05);
+    camera.lookAt(currentLookAt);
+  }
 
   // Плавне перемикання глини (Clay Mode)
   const targetMix = clayController.getIsClayMode() ? 1.0 : 0.0;
@@ -349,37 +402,35 @@ function animate() {
     waterBumpTexture.offset.y += 0.00005;
   }
 
-  // Анімація пальм (вітру)
-  palmMeshes.forEach((mesh) => {
-    const geometry = mesh.geometry;
-    if (geometry && geometry.userData.originalPosition) {
-      const posAttr = geometry.attributes.position;
-      const origPos = geometry.userData.originalPosition;
-      const minY = geometry.userData.minY;
-      const maxY = geometry.userData.maxY;
-      const heightRange = maxY - minY > 0 ? maxY - minY : 1;
+  // Анімація пальм
+  for (let p = 0; p < palmDataList.length; p++) {
+    const data = palmDataList[p];
+    const posAttr = data.posAttr;
+    const origPos = data.originalPosition;
+    const minY = data.minY;
+    const heightRange = data.heightRange;
 
-      for (let i = 0; i < posAttr.count; i++) {
-        const ox = origPos[i * 3];
-        const oy = origPos[i * 3 + 1];
-        const oz = origPos[i * 3 + 2];
+    for (let i = 0; i < posAttr.count; i++) {
+      const i3 = i * 3;
+      const ox = origPos[i3];
+      const oy = origPos[i3 + 1];
+      const oz = origPos[i3 + 2];
 
-        let heightFactor = (oy - minY) / heightRange;
-        heightFactor = Math.max(0, Math.min(1, heightFactor));
-        heightFactor = Math.max(0, (heightFactor - 0.2) / 0.8);
+      let heightFactor = (oy - minY) / heightRange;
+      heightFactor = Math.max(0, Math.min(1, heightFactor));
+      heightFactor = Math.max(0, (heightFactor - 0.2) / 0.8);
 
-        const windStrength = 0.015;
-        const windX = Math.sin(elapsedTime * 2.5 + ox * 3 + oy) * windStrength * heightFactor;
-        const windZ = Math.cos(elapsedTime * 2.0 + oz * 3) * windStrength * 0.7 * heightFactor;
+      const windStrength = 0.015;
+      const windX = Math.sin(elapsedTime * 2.5 + ox * 3 + oy) * windStrength * heightFactor;
+      const windZ = Math.cos(elapsedTime * 2.0 + oz * 3) * windStrength * 0.7 * heightFactor;
 
-        posAttr.setX(i, ox + windX);
-        posAttr.setZ(i, oz + windZ);
-      }
-      posAttr.needsUpdate = true;
+      posAttr.setX(i, ox + windX);
+      posAttr.setZ(i, oz + windZ);
     }
-  });
+    posAttr.needsUpdate = true;
+  }
 
-  // Підсвічування інтер'єру курсором
+  // Підсвічування інтер'єру
   if (mixFactor < 0.99) {
     interiorMeshes.forEach((item) => {
       item.mesh.getWorldPosition(tempVector);
@@ -407,3 +458,12 @@ function animate() {
 }
 
 animate();
+
+// Інспектор координат камери (клавіша 'C')
+window.addEventListener("keydown", (event) => {
+  if (event.key.toLowerCase() === "c") {
+    console.log(`%c [Camera Inspector] `, `background: #222; color: #bada55; padding: 2px 5px; border-radius: 3px; font-weight: bold;`);
+    console.log(`camera.position: { x: ${camera.position.x.toFixed(2)}, y: ${camera.position.y.toFixed(2)}, z: ${camera.position.z.toFixed(2)} }`);
+    console.log(`currentLookAt:  { x: ${currentLookAt.x.toFixed(2)}, y: ${currentLookAt.y.toFixed(2)}, z: ${currentLookAt.z.toFixed(2)} }`);
+  }
+});

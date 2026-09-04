@@ -210,6 +210,9 @@ header {
 }
 
 .hero-content h1 {
+  background: linear-gradient(to right, rgba(15, 20, 35, 0.85), transparent);
+  padding: 12px 18px;
+  border-radius: 8px;
   color: #ffffff;
   font-size: 3rem;
   font-weight: 700;
@@ -219,6 +222,7 @@ header {
 }
 
 .hero-content p {
+  background: linear-gradient(to right, rgba(15, 20, 35, 0.85), transparent);
   color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
   line-height: 1.6;
@@ -281,14 +285,17 @@ header {
 
 /* Стилі для About Me & Contacts */
 .info-card {
-  background: rgba(35, 40, 69, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 40px;
   max-width: 500px;
   pointer-events: auto;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .info-card h2 {
@@ -302,4 +309,94 @@ header {
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 15px;
+}
+
+/* Модальне вікно без затінення і розмиття фону */
+#shopModal.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 300px;
+  width: 100vw;
+  height: 100vh;
+  background: transparent; /* Без затемнення */
+  /* backdrop-filter та інші ефекти розмиття повністю прибрані */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none; /* Пропускає кліки крізь оверлей, коли модалка закрита */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#shopModal.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* Дозволяє взаємодіяти тільки з самою модалкою, коли вона відкрита */
+}
+
+#shopModal.modal-overlay .modal-content {
+  position: relative;
+  transform: translateX(100px) scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 30px;
+  border-radius: 12px;
+  width: 400px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#shopModal.modal-overlay.active .modal-content {
+  transform: translateX(100px) scale(1);
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px; 
+  right: 15px;
+  background: none; 
+  border: none;
+  color: #fff; 
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.shop-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #2AD4B4;
+  color: #111;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.shop-btn:hover {
+  background: #23b095;
+}
+
+.logo-btn {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.logo-btn:hover {
+  color: #2AD4B4;
+  transform: translateY(-1px);
 }

@@ -15,9 +15,20 @@
       <div class="loader-percentage" id="loaderPercentage">0%</div> 
     </div> 
 
+    <div id="shopModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <button id="closeModalBtn" class="close-btn">&times;</button>
+        <h2 id="modalTitle">Object Name</h2>
+        <p id="modalDesc">Product description...</p>
+        <a id="modalLink" href="#" target="_blank" class="shop-btn">Buy in shop</a>
+      </div>
+    </div>
+
     <div class="ui-overlay"> 
       <header> 
-        <div class="logo">Sasha Liudkevych</div> 
+        <a href="https://sashaliudkevych.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="logo-btn">
+  Sasha Liudkevych
+</a>
         
         <nav class="nav-menu">
           <button class="nav-link active" data-tab="home">Home</button>
@@ -27,7 +38,7 @@
         </nav>
 
         <div class="header-right"> 
-          <div class="badge">Architecture 3D</div> 
+          
           <button class="clay-btn" id="clayToggleBtn">Clay Mode</button> 
         </div> 
       </header> 
