@@ -157,10 +157,22 @@ try {
     document.body.dataset.ready = 'true';
 
     button.addEventListener('click', () => {
-        open = !open;
+        if (playhead <= 0) {
+            open = true;
+        } else if (playhead >= clip.duration) {
+            open = false;
+        } else {
+            open = !open;
+        }
+
         direction = open ? 1 : -1;
+        
         action.enabled = true;
         action.paused = true;
+        playhead = THREE.MathUtils.clamp(playhead + direction * 0.016, 0, clip.duration);
+        action.time = playhead;
+        mixer.update(0);
+        
         button.setAttribute('aria-pressed', String(open));
         button.querySelector('span').textContent = open ? 'Lower cover' : 'Lift cover';
         status.textContent = open ? 'Opening' : 'Closing';
@@ -169,17 +181,23 @@ try {
     function tick(now) {
         const dt = Math.min((now - lastTime) / 1000, .05);
         lastTime = now;
-        if (direction) {
+        
+        if (direction !== 0) {
             playhead = THREE.MathUtils.clamp(playhead + direction * dt, 0, clip.duration);
             action.enabled = true;
             action.paused = true;
             action.time = playhead;
             mixer.update(0);
+            
             if (playhead === 0 || playhead === clip.duration) {
                 direction = 0;
+                open = (playhead === clip.duration);
+                button.setAttribute('aria-pressed', String(open));
+                button.querySelector('span').textContent = open ? 'Lower cover' : 'Lift cover';
                 status.textContent = playhead === 0 ? 'Closed' : 'Open';
             }
         }
+        
         controls.update();
         renderer.render(scene, camera);
         requestAnimationFrame(tick);
