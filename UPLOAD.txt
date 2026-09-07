@@ -1,0 +1,19 @@
+ASTRA WEBSITE UPLOAD
+
+Upload this entire folder, preserving its subfolders, to your website.
+Open https://YOUR-DOMAIN/WHATEVER-FOLDER/astra.html
+
+Required:
+  astra.html
+  Mattress_cooling_draco.glb
+  libraries/ (all files and folders)
+
+This is a static site. No Node.js, npm installation, build step, or CDN is needed on your web server.
+The Three.js modules and Draco decoder are included locally. Use an HTTP/HTTPS website URL, not a file:// URL.
+
+If your host requires MIME configuration:
+  .js   = text/javascript
+  .wasm = application/wasm
+  .glb  = model/gltf-binary
+
+The button plays and reverses the embedded animation. Drag to rotate, scroll/pinch to zoom.

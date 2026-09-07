@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#edf1f4">
+<title>Mattress · Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='7' width='24' height='18' rx='5' fill='%230b9bbd'/%3E%3C/svg%3E">
+<style>
+:root{font-family:Inter,Arial,sans-serif;color:#172d3c;background:#edf1f4;color-scheme:light}*{box-sizing:border-box}body{margin:0;overflow:hidden}#studio{display:block;width:100%;height:100dvh;touch-action:none;outline:none}header{position:fixed;top:34px;left:40px;pointer-events:none}h1{font-size:23px;letter-spacing:-.7px;font-weight:500;margin:0 0 9px}.eyebrow{font-size:12px;letter-spacing:2.3px;color:#627783;text-transform:uppercase;margin:0 0 12px}.hint{font-size:14px;color:#627783;margin:0}.controls{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:20px;padding:10px 10px 10px 23px;border:1px solid #fff;background:#ffffffde;box-shadow:0 12px 40px #19374710;backdrop-filter:blur(15px);border-radius:50px}#status{font-size:14px;min-width:68px;white-space:nowrap;color:#5b6e7a}button{border:0;border-radius:40px;background:#183a4a;color:white;font:500 15px Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;min-width:170px;padding:17px 23px;cursor:pointer;transition:background .2s,transform .2s}button:hover{background:#096e85}button:active{transform:scale(.97)}button:focus-visible{outline:3px solid #09a6cd;outline-offset:4px}button:disabled{opacity:.5;cursor:wait}button svg{width:18px;height:18px;transition:transform .25s}button[aria-pressed=true] svg{transform:rotate(180deg)}#loading{position:fixed;left:50%;top:48%;transform:translate(-50%,-50%);font-size:15px;color:#43616d;background:#ffffffed;padding:16px 25px;border-radius:30px;text-align:center;max-width:90vw}#loading[hidden]{display:none}.corner{position:fixed;right:38px;top:40px;color:#74868e;font-size:12px;letter-spacing:2px} @media(max-width:600px){header{top:24px;left:24px}h1{font-size:21px}.corner{display:none}.controls{bottom:24px;gap:10px;padding-left:18px}button{min-width:160px;padding:16px 19px}.hint{font-size:13px}}
+</style>
+<script type="importmap">{"imports":{"three":"./libraries/three/build/three.module.js","three/addons/":"./libraries/three/addons/"}}</script>
+</head>
+<body>
+<canvas id="studio" aria-label="Interactive mattress model. Drag to rotate; scroll or pinch to zoom."></canvas>
+<header><p class="eyebrow">Cooling collection</p><h1>Inside the mattress</h1><p class="hint">Drag to rotate · Scroll to zoom</p></header>
+<span class="corner">STUDIO / 01</span>
+<div id="loading" role="status">Loading mattress…</div>
+<div class="controls"><span id="status" role="status" aria-live="polite">Loading</span><button id="toggle" type="button" disabled aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg><span>Lift cover</span></button></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const canvas=document.querySelector('#studio'),button=document.querySelector('#toggle'),status=document.querySelector('#status'),loading=document.querySelector('#loading');
+let renderer,model,mixer,action,clip,top,pipes,playhead=0,direction=0,open=false,lastTime=performance.now();
+const scene=new THREE.Scene();scene.background=new THREE.Color('#edf1f4');
+const camera=new THREE.PerspectiveCamera(36,innerWidth/innerHeight,.01,60);
+function fail(error){console.error(error);loading.hidden=false;loading.textContent='Unable to load the model. Please reload this page.';status.textContent='Unavailable';button.disabled=true;document.body.dataset.ready='error';}
+try{
+ renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
+ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment();
+ scene.environment=pmrem.fromScene(room,.04).texture;scene.environmentIntensity=.55;room.dispose();pmrem.dispose();
+ scene.add(new THREE.HemisphereLight(0xf0f8ff,0x8495a1,.45));
+ const key=new THREE.DirectionalLight(0xfff8f0,2.2);key.position.set(-2,4,1.5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-2;key.shadow.camera.right=2;key.shadow.camera.top=2;key.shadow.camera.bottom=-2;key.shadow.camera.near=.1;key.shadow.camera.far=10;key.shadow.normalBias=.002;key.shadow.bias=-.0001;key.shadow.radius=4;scene.add(key);
+ const fill=new THREE.DirectionalLight(0xd1eaff,.5);fill.position.set(3,1,0);scene.add(fill);
+ const rim=new THREE.DirectionalLight(0xffffff,.8);rim.position.set(0,3,-3);scene.add(rim);
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0xedf1f4,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=true;scene.add(floor);
+ const controls=new OrbitControls(camera,canvas);controls.target.set(0,.19,0);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=1.6;controls.maxDistance=11;controls.maxPolarAngle=Math.PI/2-.03;controls.enablePan=false;
+ function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+ function frameCamera(){const distance=Math.max(3.65,3.5/camera.aspect);camera.position.copy(new THREE.Vector3(1.1,.95,1.35).normalize().multiplyScalar(distance)).add(controls.target);controls.update();}
+ frameCamera();addEventListener('resize',()=>{resize();frameCamera();});
+ const draco=new DRACOLoader();draco.setDecoderPath('./libraries/three/addons/libs/draco/gltf/');draco.setWorkerLimit(2);
+ const loader=new GLTFLoader();loader.setDRACOLoader(draco);
+ const gltf=await loader.loadAsync('./Mattress_cooling_draco.glb');model=gltf.scene;
+ clip=gltf.animations.find(a=>a.name==='Top_Lift')??gltf.animations[0];if(!clip)throw new Error('GLB contains no animation');
+ const assembly=new THREE.Group();assembly.add(model);scene.add(assembly);
+ mixer=new THREE.AnimationMixer(model);action=mixer.clipAction(clip);action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;action.play();action.paused=true;mixer.update(0);
+ model.traverse(ob=>{if(ob.isMesh){ob.castShadow=true;ob.receiveShadow=true;if(ob.name.includes('Mattress_TOP'))top=ob;if(ob.name.includes('WATER_PIPES')||ob.name.includes('WATER PIPES'))pipes=ob;}});
+ const bounds=new THREE.Box3().setFromObject(model),center=bounds.getCenter(new THREE.Vector3());assembly.position.set(-center.x,-bounds.min.y,-center.z);
+ model.updateWorldMatrix(true,true);loading.hidden=true;button.disabled=false;status.textContent='Closed';document.body.dataset.ready='true';
+ button.addEventListener('click',()=>{open=!open;direction=open?1:-1;button.setAttribute('aria-pressed',String(open));button.querySelector('span').textContent=open?'Lower cover':'Lift cover';status.textContent=open?'Opening':'Closing';});
+ // A single playhead samples the embedded clip in either direction, including mid-motion reversals.
+ function tick(now){const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;
+  if(direction){playhead=THREE.MathUtils.clamp(playhead+direction*dt,0,clip.duration);action.enabled=true;action.paused=true;action.time=playhead;mixer.update(0);
+   if(playhead===0||playhead===clip.duration){direction=0;status.textContent=playhead===0?'Closed':'Open';}}
+  controls.update();renderer.render(scene,camera);requestAnimationFrame(tick);
+ }
+ lastTime=performance.now();requestAnimationFrame(tick);
+ // Read-only diagnostics used to verify the real GLB and animation in the browser.
+ Object.defineProperty(window,'mattressViewer',{get:()=>({ready:true,duration:clip.duration,time:playhead,direction,open,topY:top?.getWorldPosition(new THREE.Vector3()).y,pipesY:pipes?.getWorldPosition(new THREE.Vector3()).y,triangles:renderer.info.render.triangles})});
+}catch(error){fail(error);}
+</script>
+</body>
+</html>
+
