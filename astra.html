@@ -46,7 +46,7 @@ try{
  frameCamera();addEventListener('resize',()=>{resize();frameCamera();});
  const draco=new DRACOLoader();draco.setDecoderPath('./node_modules/three/examples/jsm/libs/draco/gltf/');draco.setWorkerLimit(2);
  const loader=new GLTFLoader();loader.setDRACOLoader(draco);
- const gltf=await loader.loadAsync('./Mattress_cooling_draco.glb');model=gltf.scene;
+ const gltf=await loader.loadAsync('Mattress_cooling_draco.glb');model=gltf.scene;
  clip=gltf.animations.find(a=>a.name==='Top_Lift')??gltf.animations[0];if(!clip)throw new Error('GLB contains no animation');
  const assembly=new THREE.Group();assembly.add(model);scene.add(assembly);
  mixer=new THREE.AnimationMixer(model);action=mixer.clipAction(clip);action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;action.play();action.paused=true;mixer.update(0);
