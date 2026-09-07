@@ -7,7 +7,7 @@
 <title>Mattress · Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='7' width='24' height='18' rx='5' fill='%230b9bbd'/%3E%3C/svg%3E">
 <style>
-:root{font-family:Inter,Arial,sans-serif;color:#172d3c;background:#edf1f4;color-scheme:light}*{box-sizing:border-box}body{margin:0;overflow:hidden}#studio{display:block;width:100%;height:100dvh;touch-action:none;outline:none}header{position:fixed;top:34px;left:40px;pointer-events:none}h1{font-size:23px;letter-spacing:-.7px;font-weight:500;margin:0 0 9px}.eyebrow{font-size:12px;letter-spacing:2.3px;color:#627783;text-transform:uppercase;margin:0 0 12px}.hint{font-size:14px;color:#627783;margin:0}.controls{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:20px;padding:10px 10px 10px 23px;border:1px solid #fff;background:#ffffffde;box-shadow:0 12px 40px #19374710;backdrop-filter:blur(15px);border-radius:50px}#status{font-size:14px;min-width:68px;white-space:nowrap;color:#5b6e7a}button{border:0;border-radius:40px;background:#183a4a;color:white;font:500 15px Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;min-width:170px;padding:17px 23px;cursor:pointer;transition:background .2s,transform .2s}button:hover{background:#096e85}button:active{transform:scale(.97)}button:focus-visible{outline:3px solid #09a6cd;outline-offset:4px}button:disabled{opacity:.5;cursor:wait}button svg{width:18px;height:18px;transition:transform .25s}button[aria-pressed=true] svg{transform:rotate(180deg)}#loading{position:fixed;left:50%;top:48%;transform:translate(-50%,-50%);font-size:15px;color:#43616d;background:#ffffffed;padding:16px 25px;border-radius:30px;text-align:center;max-width:90vw}#loading[hidden]{display:none}.corner{position:fixed;right:38px;top:40px;color:#74868e;font-size:12px;letter-spacing:2px} @media(max-width:600px){header{top:24px;left:24px}h1{font-size:21px}.corner{display:none}.controls{bottom:24px;gap:10px;padding-left:18px}button{min-width:160px;padding:16px 19px}.hint{font-size:13px}}
+:root{font-family:Inter,Arial,sans-serif;color:#172d3c;background:#edf1f4;color-scheme:light}*{box-sizing:border-box}body{margin:0;overflow:hidden}#studio{display:block;width:100%;height:100dvh;touch-action:none;outline:none}header{position:fixed;top:34px;left:40px;pointer-events:none}h1{font-size:23px;letter-spacing:-.7px;font-weight:500;margin:0 0 9px}.eyebrow{font-size:12px;letter-spacing:2.3px;color:#627783;text-transform:uppercase;margin:0 0 12px}.hint{font-size:14px;color:#627783;margin:0}.controls{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:20px;padding:10px 10px 10px 23px;border:1px solid #fff;background:#ffffffde;box-shadow:0 12px 40px #19374710;backdrop-filter:blur(15px);border-radius:50px}#status{font-size:14px;min-width:68px;white-space:nowrap;color:#5b6e7a}button{border:0;border-radius:40px;background:#183a4a;color:white;font:500 15px Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;min-width:170px;padding:17px 23px;cursor:pointer;transition:background .2s,transform .2s}button:hover{background:#096e85}button:active{transform:scale(.97)}button:focus-visible{outline:3px solid #09a6cd;outline-offset:4px}button:disabled{opacity:.5;cursor:wait}button svg{width:18px;height:18px;transition:transform .25s}button[aria-pressed=true] svg{transform:rotate(180deg)}#loading{position:fixed;left:50%;top:48%;transform:translate(-50%,-50%);font-size:15px;color:#43616d;background:#ffffffed;padding:16px 25px;border-radius:30px;text-align:center;max-width:90vw}#loading[hidden]:not([hidden]){display:block}#loading[hidden]{display:none}.corner{position:fixed;right:38px;top:40px;color:#74868e;font-size:12px;letter-spacing:2px} @media(max-width:600px){header{top:24px;left:24px}h1{font-size:21px}.corner{display:none}.controls{bottom:24px;gap:10px;padding-left:18px}button{min-width:160px;padding:16px 19px}.hint{font-size:13px}}
 </style>
 <script type="importmap">
 {
@@ -32,7 +32,7 @@ import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 const canvas = document.querySelector('#studio'), button = document.querySelector('#toggle'), status = document.querySelector('#status'), loading = document.querySelector('#loading');
-let renderer, model, mixer, action, clip, top, pipes, playhead = 0, direction = 0, open = false, lastTime = performance.now();
+let renderer, model, mixer, action, clip, top, pipes, playhead = 0, targetPlayhead = 0, open = false, lastTime = performance.now();
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#edf1f4');
 const camera = new THREE.PerspectiveCamera(36, innerWidth / innerHeight, .01, 60);
 
@@ -126,6 +126,25 @@ try {
     clip = gltf.animations.find(a => a.name === 'Top_Lift') ?? gltf.animations[0];
     if (!clip) throw new Error('GLB contains no animation');
 
+    // --- ДЕТАЛЬНА ВІДЛАДКА У КОНСОЛІ ---
+    console.group("🔍 [ANIMATION DEBUGGER]");
+    console.log("Обраний кліп:", clip.name, "Тривалість:", clip.duration, "с");
+    console.log("Кількість треків у кліпі:", clip.tracks.length);
+
+    const modelNodeNames = new Set();
+    model.traverse(node => {
+        modelNodeNames.add(node.name);
+    });
+
+    clip.tracks.forEach((track, i) => {
+        const targetName = track.name.split('.')[0];
+        const property = track.name.split('.')[1];
+        const exists = modelNodeNames.has(targetName);
+        console.log(`%c[Track ${i}] Об'єкт: "${targetName}" | Властивість: ${property} | Знайдено в моделі: ${exists ? '✅ ТАК' : '❌ НІ'}`, exists ? 'color: green;' : 'color: red; font-weight: bold;');
+    });
+    console.groupEnd();
+    // ----------------------------------
+
     const assembly = new THREE.Group();
     assembly.add(model);
     scene.add(assembly);
@@ -157,21 +176,8 @@ try {
     document.body.dataset.ready = 'true';
 
     button.addEventListener('click', () => {
-        if (playhead <= 0) {
-            open = true;
-        } else if (playhead >= clip.duration) {
-            open = false;
-        } else {
-            open = !open;
-        }
-
-        direction = open ? 1 : -1;
-        
-        action.enabled = true;
-        action.paused = true;
-        playhead = THREE.MathUtils.clamp(playhead + direction * 0.016, 0, clip.duration);
-        action.time = playhead;
-        mixer.update(0);
+        open = !open;
+        targetPlayhead = open ? clip.duration : 0;
         
         button.setAttribute('aria-pressed', String(open));
         button.querySelector('span').textContent = open ? 'Lower cover' : 'Lift cover';
@@ -182,19 +188,22 @@ try {
         const dt = Math.min((now - lastTime) / 1000, .05);
         lastTime = now;
         
-        if (direction !== 0) {
-            playhead = THREE.MathUtils.clamp(playhead + direction * dt, 0, clip.duration);
+        if (Math.abs(playhead - targetPlayhead) > 0.001) {
+            const step = (targetPlayhead > playhead ? 1 : -1) * dt * 2.2;
+            playhead = targetPlayhead > playhead 
+                ? Math.min(targetPlayhead, playhead + Math.abs(step))
+                : Math.max(targetPlayhead, playhead - Math.abs(step));
+
             action.enabled = true;
             action.paused = true;
             action.time = playhead;
             mixer.update(0);
             
-            if (playhead === 0 || playhead === clip.duration) {
-                direction = 0;
-                open = (playhead === clip.duration);
-                button.setAttribute('aria-pressed', String(open));
-                button.querySelector('span').textContent = open ? 'Lower cover' : 'Lift cover';
-                status.textContent = playhead === 0 ? 'Closed' : 'Open';
+            if (Math.abs(playhead - targetPlayhead) <= 0.001) {
+                playhead = targetPlayhead;
+                action.time = playhead;
+                mixer.update(0);
+                status.textContent = open ? 'Open' : 'Closed';
             }
         }
         
@@ -205,18 +214,6 @@ try {
     lastTime = performance.now();
     requestAnimationFrame(tick);
 
-    Object.defineProperty(window, 'mattressViewer', {
-        get: () => ({
-            ready: true,
-            duration: clip.duration,
-            time: playhead,
-            direction,
-            open,
-            topY: top?.getWorldPosition(new THREE.Vector3()).y,
-            pipesY: pipes?.getWorldPosition(new THREE.Vector3()).y,
-            triangles: renderer.info.render.triangles
-        })
-    });
 } catch (error) {
     fail(error);
 }
