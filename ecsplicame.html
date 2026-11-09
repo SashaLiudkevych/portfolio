@@ -61,14 +61,14 @@
         <!-- Generate Button Section -->
         <section class="text-center">
             <button onclick="generateWords()" class="w-full py-4 px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white font-bold text-xl sm:text-2xl rounded-3xl shadow-xl hover:shadow-2xl transition-all border-b-4 border-orange-700 flex items-center justify-center gap-3">
-                <i class="fa-solid fa-dice text-2xl sm:text-3xl"></i> Generar 6 Palabras
+                <i class="fa-solid fa-dice text-2xl sm:text-3xl"></i> Generar 1 Palabra
             </button>
         </section>
 
         <!-- Words List Section -->
-        <section class="bg-white/80 backdrop-blur-sm rounded-3xl p-5 shadow-lg border-2 border-amber-200 flex-grow flex flex-col justify-center">
-            <div id="words-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- 6 Word Cards will be dynamically inserted here -->
+        <section class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg border-2 border-amber-200 flex-grow flex flex-col justify-center items-center">
+            <div id="words-container" class="w-full max-w-md">
+                <!-- 1 Word Card will be dynamically inserted here -->
             </div>
         </section>
 
@@ -181,36 +181,29 @@
             document.getElementById('score-display').textContent = score;
         }
 
-        // Generar 6 palabras aleatorias
+        // Generar 1 palabra aleatoria
         function generateWords() {
             const container = document.getElementById('words-container');
             container.innerHTML = '';
 
-            // Mezclar el arreglo y obtener los primeros 6 elementos
-            const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
-            const selectedWords = shuffled.slice(0, 6);
+            // Selección aleatoria de 1 palabra
+            const randomIndex = Math.floor(Math.random() * wordBank.length);
+            const word = wordBank[randomIndex];
 
-            // Crear y mostrar tarjeta para cada palabra
-            selectedWords.forEach((word, index) => {
-                const card = document.createElement('div');
-                card.className = "flex items-center bg-amber-50/80 border border-amber-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all";
+            // Crear tarjeta grande para la palabra
+            const card = document.createElement('div');
+            card.className = "flex items-center justify-center bg-amber-50 border-2 border-amber-300 rounded-3xl p-6 sm:p-8 shadow-md transition-all text-center";
 
-                card.innerHTML = `
-                    <div class="flex-shrink-0 w-9 h-9 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center mr-3 font-heading text-lg shadow-sm">
-                        ${index + 1}
-                    </div>
-                    <div class="overflow-hidden">
-                        <div class="text-lg font-bold text-gray-800 capitalize leading-tight">
-                            ${word}
-                        </div>
-                    </div>
-                `;
+            card.innerHTML = `
+                <div class="text-2xl sm:text-4xl font-extrabold text-amber-900 font-heading capitalize leading-tight tracking-wide">
+                    ${word}
+                </div>
+            `;
 
-                container.appendChild(card);
-            });
+            container.appendChild(card);
         }
 
-        // Generar palabras al cargar la página
+        // Generar 1 palabra al cargar la página
         window.onload = function() {
             generateWords();
         };
