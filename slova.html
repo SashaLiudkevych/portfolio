@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Слова</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+        }
+        h1, .font-heading {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        /* Fun Animations */
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<script>
+    // Enable Dark Mode on HTML tag by default before render
+    document.documentElement.classList.add('dark');
+</script>
+<body id="app-body" class="bg-gradient-to-br from-amber-50 via-orange-100 to-yellow-100 dark:from-slate-950 dark:via-slate-900 dark:to-zinc-950 min-h-screen flex flex-col justify-between p-4 sm:p-6 text-gray-800 dark:text-slate-100 transition-colors duration-500">
+
+    <!-- Header Section -->
+    <header class="text-center max-w-xl mx-auto w-full pt-2 pb-2 flex flex-col items-center gap-4">
+        
+        <!-- Controls Bar: Language & Theme Switchers -->
+        <div class="flex items-center justify-between w-full max-w-sm px-2 gap-2">
+            <!-- Language Switcher -->
+            <div id="lang-bar" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-full shadow-md border-2 border-amber-300 dark:border-amber-500/30 flex items-center gap-1 transition-all duration-300">
+                <button id="lang-ua-btn" onclick="setLanguage('ua')" class="px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 bg-amber-500 text-white shadow-sm">
+                    <span>🇺🇦</span> UA
+                </button>
+                <button id="lang-ru-btn" onclick="setLanguage('ru')" class="px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 text-gray-600 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-slate-800">
+                    <span>🇷🇺</span> RU
+                </button>
+            </div>
+
+            <!-- Dark / Light Theme Toggle -->
+            <button id="theme-toggle-btn" onclick="toggleTheme()" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-2 px-4 rounded-full shadow-md border-2 border-amber-300 dark:border-amber-500/30 font-bold text-xs sm:text-sm transition-all flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95">
+                <i id="theme-icon" class="fa-solid fa-sun text-lg text-amber-300"></i>
+                <span id="theme-label" class="hidden sm:inline">Світла</span>
+            </button>
+        </div>
+
+        <div>
+            <h1 id="ui-title" class="text-3xl sm:text-4xl font-black text-amber-600 dark:text-amber-400 drop-shadow-sm flex items-center justify-center gap-2 animate-bounce-subtle">
+                🎲 Зрозумій мене 🎈
+            </h1>
+            <p id="ui-subtitle" class="text-gray-600 dark:text-slate-300 font-bold text-sm sm:text-base mt-1">
+                Генератор слів для настільних ігор та розваг
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-xl mx-auto w-full flex-grow flex flex-col gap-5 my-2">
+
+        <!-- Scoreboard Card -->
+        <section id="card-score" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-5 shadow-lg border-2 border-amber-300 dark:border-amber-500/30 flex flex-col items-center justify-between transition-all duration-300">
+            <h2 id="ui-score-label" class="text-xs uppercase tracking-wider font-extrabold text-amber-500 dark:text-amber-400 mb-1">
+                Рахунок / Бали
+            </h2>
+            
+            <div class="text-5xl font-black text-amber-600 dark:text-amber-400 font-heading my-1 tracking-tight drop-shadow-sm" id="score-display">
+                0
+            </div>
+
+            <div class="flex items-center justify-center gap-3 w-full mt-2">
+                <!-- Minus Button (-1 works immediately below zero) -->
+                <button id="btn-minus" onclick="changeScore(-1)" class="flex-1 py-3 px-4 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-black text-lg sm:text-xl rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 border-b-4 border-rose-700">
+                    <i class="fa-solid fa-minus"></i> -1
+                </button>
+
+                <!-- Plus Button -->
+                <button id="btn-plus" onclick="changeScore(1)" class="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-lg sm:text-xl rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 border-b-4 border-emerald-700">
+                    <i class="fa-solid fa-plus"></i> +1
+                </button>
+
+                <!-- Reset Score Button -->
+                <button onclick="resetScore()" id="btn-reset" title="Скинути" class="py-3 px-4 bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 active:scale-95 text-gray-700 dark:text-slate-200 font-bold text-lg rounded-2xl transition-all border-b-4 border-gray-400 dark:border-slate-950">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Generate Button Section -->
+        <section class="text-center">
+            <button onclick="generateWord()" class="w-full py-4 px-6 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-600 hover:to-orange-600 dark:from-amber-600 dark:via-orange-600 dark:to-yellow-600 active:scale-95 text-white font-extrabold text-xl sm:text-2xl rounded-3xl shadow-xl hover:shadow-2xl transition-all border-b-4 border-orange-700 dark:border-orange-800 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-dice text-2xl sm:text-3xl"></i> 
+                <span id="ui-btn-generate">Генерувати слово</span>
+            </button>
+        </section>
+
+        <!-- Word Card Container -->
+        <section id="card-word-wrap" class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl p-6 shadow-lg border-2 border-amber-300 dark:border-amber-500/30 flex-grow flex flex-col justify-center items-center min-h-[170px] transition-all duration-300">
+            <div id="words-container" class="w-full max-w-md">
+                <!-- Dynamic word card -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="ui-footer" class="text-center text-xs font-semibold text-gray-500 dark:text-slate-400 mt-4 pb-2 transition-colors duration-300">
+        Веселі слова для дітей • Настільні ігри
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Dictionary of 500+ kid-friendly words for Ukrainian & Russian
+        const dictionaries = {
+            ua: [
+                // Тварини (Animals)
+                "Котик", "Песик", "Зайчик", "Ведмедик", "Лисичка", "Вовчик", "Їжачок", "Білочка", "Мишка", "Корова",
+                "Коза", "Овечка", "Свинка", "Коник", "Ослик", "Курка", "Півник", "Качка", "Гуска", "Індичка",
+                "Папуга", "Горобець", "Сова", "Дятел", "Ворона", "Ластівка", "Лелека", "Слон", "Жираф", "Лев",
+                "Тигр", "Зебра", "Обезьянка", "Бегемот", "Носоріг", "Крокодил", "Черепаха", "Жабка", "Змія", "Дельфін",
+                "Кит", "Акула", "Восьминіг", "Крабик", "Рибка", "Рак", "Равлик", "Метелик", "Бджілка", "Сонечко",
+                "Мураха", "Муха", "Комар", "Павучок", "Хом'ячок", "Панда", "Кенгуру", "Пінгвін", "Олень", "Тюлень",
+
+                // Іграшки та Розваги (Toys & Fun)
+                "М'ячик", "Лялька", "Машинка", "Кубики", "Конструктор", "Пазл", "Пірамідка", "Юла", "Робот", "Ракета",
+                "Літачок", "Поїзд", "Кораблик", "Самокат", "Велосипед", "Ролики", "Гойдалка", "Гірка", "Батут", "Свисток",
+                "Барабан", "Ксилофон", "Сопілка", "Гітара", "Пластилін", "Фарби", "Олівці", "Фломастери", "Крейда", "Малюнок",
+                "Мильні бульбашки", "Повітряна кулька", "Скакалка", "Прапорець", "Маска", "Корона", "Скарбничка", "Казка", "Мультик", "Гра",
+
+                // Їжа та Напої (Food & Drinks)
+                "Яблуко", "Груша", "Банан", "Апельсин", "Лимон", "Полуниця", "Малина", "Кавун", "Диня", "Виноград",
+                "Слива", "Вишня", "Черешня", "Персик", "Абрикос", "Ананас", "Огірок", "Помідор", "Морква", "Картопля",
+                "Капуста", "Цибуля", "Часник", "Перець", "Горошок", "Кукурудза", "Гриб", "Хліб", "Булочка", "Пиріг",
+                "Торт", "Тістечко", "Печиво", "Цукерка", "Шоколад", "Морозиво", "Варення", "Мед", "Каша", "Суп",
+                "Борщ", "Вареники", "Пампушка", "Млинці", "Сирник", "Яйце", "Молоко", "Сир", "Масло", "Сметаночка",
+                "Сік", "Чай", "Компот", "Вода", "Какао", "Піца", "Макарони", "Сосиска", "Котлета", "Бутерброд",
+
+                // Дім та Побут (House & Home)
+                "Хата", "Кімната", "Двері", "Вікно", "Стіл", "Стілець", "Диван", "Ліжко", "Подушка", "Ковдра",
+                "Шафа", "Дзеркало", "Килим", "Лампа", "Годинник", "Телевізор", "Телефон", "Планшет", "Ложка", "Виделка",
+                "Ніж", "Тарілка", "Чашка", "Стакан", "Каструля", "Сковорода", "Чайник", "Холодильник", "Мило", "Рушник",
+                "Щітка", "Паста", "Гребінець", "Ванна", "Кран", "Ключ", "Рюкзак", "Сумка", "Парасолька", "Кошик",
+
+                // Одяг та Взуття (Clothes & Shoes)
+                "Шапка", "Капелюх", "Куртка", "Пальто", "Сорочка", "Футболка", "Кофта", "Светр", "Штани", "Джинси",
+                "Шорти", "Спідниця", "Сукня", "Піжама", "Шкарпетки", "Колготки", "Рукавички", "Шарф", "Черевики", "Кросівки",
+                "Сапожки", "Тапочки", "Сандалі", "Ремінь", "Кишеня", "Ґудзик", "Блискавка", "Бантик", "Окуляри", "Рюкзачок",
+
+                // Людина та Сім'я (People & Family)
+                "Мама", "Тато", "Бабуся", "Дідусь", "Братик", "Сестричка", "Малюк", "Хлопчик", "Дівчинка", "Друг",
+                "Подруга", "Учитель", "Лікар", "Водій", "Повар", "Пожежник", "Поліцейський", "Пілот", "Будівельник", "Художник",
+                "Око", "Вушко", "Носик", "Рот", "Зубик", "Язичок", "Голова", "Волосся", "Ручка", "Ніжка",
+                "Пальчик", "Животик", "Спинка", "Серденько", "Усмішка", "Сльозинка", "Голос", "Сон", "Казка", "Ім'я",
+
+                // Природа та Космос (Nature & Space)
+                "Сонце", "Місяць", "Зірочка", "Хмаринка", "Небо", "Дощик", "Сніг", "Вітер", "Веселка", "Грім",
+                "Мороз", "Лід", "Озеро", "Річка", "Море", "Океан", "Пляж", "Пісок", "Камінчик", "Гора",
+                "Ліс", "Дерево", "Квітка", "Трава", "Листочок", "Кущик", "Пеньок", "Жолудь", "Шишка", "Земля",
+                "Планета", "Ракета", "Космонавт", "Комета", "День", "Ніч", "Ранок", "Вечір", "Весна", "Літо",
+                "Осінь", "Зима", "Світло", "Тінь", "Острів", "Печера", "Вулкан", "Поле", "Сад", "Стежка",
+
+                // Транспорт та Місто (Transport & City)
+                "Автобус", "Трамвай", "Тролейбус", "Поїзд", "Метро", "Машина", "Таксі", "Вантажівка", "Трактор", "Екскаватор",
+                "Літак", "Гелікоптер", "Корабель", "Човен", "Велосипед", "Самокат", "Світлофор", "Дорога", "Вулиця", "Міст",
+                "Парк", "Зоопарк", "Цирк", "Театр", "Магазин", "Школа", "Садочок", "Будинок", "Аптека", "Лікарня",
+
+                // Кольори та Форми (Colors & Shapes)
+                "Червоний", "Синій", "Жовтий", "Зелений", "Оранжевий", "Рожевий", "Фіолетовий", "Білий", "Чорний", "Коричневий",
+                "Голубий", "Салатовий", "Круг", "Квадрат", "Трикутник", "Зірочка", "Сердечко", "Овал", "Лінія", "Кулька",
+
+                // Дії та Якості (Actions & Qualities)
+                "Бігти", "Стрибати", "Сміятися", "Співати", "Танцювати", "Малювати", "Читати", "Писати", "Грати", "Спати",
+                "Їсти", "Пити", "Мити", "Обнімати", "Любити", "Веселий", "Добрий", "Гарний", "Великий", "Маленький",
+                "Швидкий", "Тихий", "Теплий", "М'який", "Солодкий", "Смачний", "Розумний", "Сміливий", "Чистий", "Яскравий"
+            ],
+            ru: [
+                // Животные (Animals)
+                "Котик", "Собачка", "Зайчик", "Мишка", "Лисичка", "Волчонок", "Ежик", "Белочка", "Мышонок", "Корова",
+                "Козочка", "Овечка", "Хрюшка", "Лошадка", "Ослик", "Курочка", "Петушок", "Уточка", "Гусь", "Индюк",
+                "Попугай", "Воробей", "Совушка", "Дятел", "Ворона", "Ласточка", "Аист", "Слоник", "Жираф", "Лев",
+                "Тигр", "Зебра", "Обезьянка", "Бегемот", "Носорог", "Крокодил", "Черепашка", "Лягушка", "Змейка", "Дельфин",
+                "Китик", "Акула", "Осьминог", "Крабик", "Рыбка", "Рачок", "Улитка", "Бабочка", "Пчелка", "Божья коровка",
+                "Муравей", "Муха", "Комарик", "Паучок", "Хомячок", "Панда", "Кенгуру", "Пингвин", "Олень", "Тюлень",
+
+                // Игрушки и Развлечения (Toys & Fun)
+                "Мячик", "Кукла", "Машинка", "Кубики", "Конструктор", "Пазл", "Пирамидка", "Юла", "Робот", "Ракета",
+                "Самолетик", "Поезд", "Кораблик", "Самокат", "Велосипед", "Ролики", "Качели", "Горка", "Батут", "Свисток",
+                "Барабан", "Ксилофон", "Дудочка", "Гитара", "Пластилин", "Краски", "Карандаши", "Фломастеры", "Мелок", "Рисунок",
+                "Мыльные пузыри", "Шарик", "Скакалка", "Флажок", "Маска", "Корона", "Копилка", "Сказка", "Мультик", "Игра",
+
+                // Еда и Напитки (Food & Drinks)
+                "Яблоко", "Груша", "Банан", "Апельсин", "Лимон", "Клубника", "Малина", "Арбуз", "Дыня", "Виноград",
+                "Слива", "Вишня", "Черешня", "Персик", "Абрикос", "Ананас", "Огурец", "Помидор", "Морковка", "Картошка",
+                "Капуста", "Лук", "Чеснок", "Перечик", "Горошек", "Кукуруза", "Грибок", "Хлеб", "Булочка", "Пирог",
+                "Тортик", "Пирожное", "Печенье", "Конфетка", "Шоколад", "Мороженое", "Варенье", "Мед", "Каша", "Супчик",
+                "Борщ", "Вареники", "Пончик", "Блинчики", "Сырник", "Яйцо", "Молоко", "Сыр", "Масло", "Сметаночка",
+                "Сок", "Чай", "Компот", "Вода", "Какао", "Пицца", "Макароны", "Сосиска", "Котлета", "Бутерброд",
+
+                // Дом и Быт (House & Home)
+                "Домик", "Комната", "Дверь", "Окошко", "Стол", "Стульчик", "Диван", "Кровать", "Подушка", "Одеяло",
+                "Шкаф", "Зеркало", "Ковер", "Лампа", "Часики", "Телевизор", "Телефон", "Планшет", "Ложка", "Вилка",
+                "Ножик", "Тарелка", "Чашка", "Стакан", "Кастрюля", "Сковорода", "Чайник", "Холодильник", "Мыло", "Полотенце",
+                "Щетка", "Паста", "Расческа", "Ванна", "Кран", "Ключик", "Рюкзак", "Сумка", "Зонтик", "Корзинка",
+
+                // Одежда и Обувь (Clothes & Shoes)
+                "Шапка", "Шляпа", "Куртка", "Пальто", "Рубашка", "Футболка", "Кофта", "Свитер", "Штаны", "Джинсы",
+                "Шорты", "Юбочка", "Платье", "Пижама", "Носочки", "Колготки", "Варежки", "Шарфик", "Ботинки", "Кроссовки",
+                "Сапожки", "Тапочки", "Сандали", "Ремень", "Карман", "Пуговица", "Молния", "Бант", "Очки", "Рюкзачок",
+
+                // Человек и Семья (People & Family)
+                "Мама", "Папа", "Бабушка", "Дедушка", "Братик", "Сестренка", "Малыш", "Мальчик", "Девочка", "Друг",
+                "Подружка", "Учитель", "Врач", "Водитель", "Повар", "Пожарный", "Полицейский", "Пилот", "Строитель", "Художник",
+                "Глазик", "Ушко", "Носик", "Рот", "Зубик", "Язычок", "Голова", "Волосы", "Ручка", "Ножка",
+                "Пальчик", "Животик", "Спинка", "Сердечко", "Улыбка", "Слезинка", "Голос", "Сон", "Сказка", "Имя",
+
+                // Природа и Космос (Nature & Space)
+                "Солнышко", "Луна", "Звездочка", "Облако", "Небо", "Дождик", "Снег", "Ветер", "Радуга", "Гром",
+                "Мороз", "Лед", "Озеро", "Речка", "Море", "Океан", "Пляж", "Песок", "Камешек", "Гора",
+                "Лес", "Дерево", "Цветок", "Трава", "Листик", "Кустик", "Пенек", "Желудь", "Шишка", "Земля",
+                "Планета", "Ракета", "Космонавт", "Комета", "День", "Ночь", "Утро", "Вечер", "Весна", "Лето",
+                "Осень", "Зима", "Свет", "Тень", "Остров", "Пещера", "Вулкан", "Поле", "Сад", "Тропинка",
+
+                // Транспорт и Город (Transport & City)
+                "Автобус", "Трамвай", "Троллейбус", "Поезд", "Метро", "Машина", "Такси", "Грузовик", "Трактор", "Экскаватор",
+                "Самолет", "Вертолет", "Корабль", "Лодка", "Велосипед", "Самокат", "Светофор", "Дорога", "Улица", "Мост",
+                "Парк", "Зоопарк", "Цирк", "Театр", "Магазин", "Школа", "Садик", "Дом", "Аптека", "Больница",
+
+                // Цвета и Формы (Colors & Shapes)
+                "Красный", "Синий", "Желтый", "Зеленый", "Оранжевый", "Розовый", "Фиолетовый", "Белый", "Черный", "Коричневый",
+                "Голубой", "Салатовый", "Круг", "Квадрат", "Треугольник", "Звездочка", "Сердечко", "Овал", "Линия", "Шарик",
+
+                // Действия и Качества (Actions & Qualities)
+                "Бегать", "Прыгать", "Смеяться", "Петь", "Танцевать", "Рисовать", "Читать", "Писать", "Играть", "Спать",
+                "Кушать", "Пить", "Умываться", "Обнимать", "Любить", "Веселый", "Добрый", "Красивый", "Большой", "Маленький",
+                "Быстрый", "Тихий", "Теплый", "Мягкий", "Сладкий", "Вкусный", "Умный", "Смелый", "Чистый", "Яркий"
+            ]
+        };
+
+        // UI Translations
+        const translations = {
+            ua: {
+                title: "🎲 Зрозумій мене 🎈",
+                subtitle: "Генератор слів для настільних ігор та розваг",
+                scoreLabel: "Рахунок / Бали",
+                btnGenerate: "Генерувати слово",
+                footer: "Веселі слова для дітей • Настільні ігри",
+                themeDark: "Темна",
+                themeLight: "Світла"
+            },
+            ru: {
+                title: "🎲 Пойми меня 🎈",
+                subtitle: "Генератор слов для настольных игр и развлечений",
+                scoreLabel: "Счет / Баллы",
+                btnGenerate: "Сгенерировать слово",
+                footer: "Веселые слова для детей • Настольные игры",
+                themeDark: "Темная",
+                themeLight: "Светлая"
+            }
+        };
+
+        let currentLang = 'ua';
+        let isDarkMode = true; // Default theme is now dark
+        let score = 0;
+        let lastWord = "";
+
+        // Toggle Dark / Light Theme
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const htmlElement = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeLabel = document.getElementById('theme-label');
+
+            if (isDarkMode) {
+                htmlElement.classList.add('dark');
+                themeIcon.className = "fa-solid fa-sun text-lg text-amber-300";
+                themeLabel.textContent = translations[currentLang].themeLight;
+            } else {
+                htmlElement.classList.remove('dark');
+                themeIcon.className = "fa-solid fa-moon text-lg";
+                themeLabel.textContent = translations[currentLang].themeDark;
+            }
+
+            // Re-render word card to apply theme colors
+            if (lastWord) {
+                renderWordCard(lastWord);
+            }
+        }
+
+        // Switch Language function
+        function setLanguage(lang) {
+            currentLang = lang;
+
+            const uaBtn = document.getElementById('lang-ua-btn');
+            const ruBtn = document.getElementById('lang-ru-btn');
+            const themeLabel = document.getElementById('theme-label');
+
+            if (lang === 'ua') {
+                uaBtn.className = "px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 bg-amber-500 text-white shadow-sm";
+                ruBtn.className = "px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 text-gray-600 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-slate-800";
+            } else {
+                ruBtn.className = "px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 bg-amber-500 text-white shadow-sm";
+                uaBtn.className = "px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 text-gray-600 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-slate-800";
+            }
+
+            // Update UI Texts
+            document.getElementById('ui-title').innerHTML = translations[lang].title;
+            document.getElementById('ui-subtitle').textContent = translations[lang].subtitle;
+            document.getElementById('ui-score-label').textContent = translations[lang].scoreLabel;
+            document.getElementById('ui-btn-generate').textContent = translations[lang].btnGenerate;
+            document.getElementById('ui-footer').textContent = translations[lang].footer;
+            themeLabel.textContent = isDarkMode ? translations[lang].themeLight : translations[lang].themeDark;
+
+            // Generate a fresh word in the selected language
+            generateWord();
+        }
+
+        // Change Score (+1 / -1) - Can go below 0 immediately
+        function changeScore(delta) {
+            score += delta;
+            
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.textContent = score;
+            
+            // Pop animation on score change
+            scoreDisplay.classList.remove('animate-pop');
+            void scoreDisplay.offsetWidth; // Reflow
+            scoreDisplay.classList.add('animate-pop');
+        }
+
+        // Reset Score to 0
+        function resetScore() {
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+        }
+
+        // Light & Dark color palettes for word cards
+        const lightCardThemes = [
+            'bg-amber-50 border-amber-300 text-amber-950',
+            'bg-sky-50 border-sky-300 text-sky-950',
+            'bg-emerald-50 border-emerald-300 text-emerald-950',
+            'bg-rose-50 border-rose-300 text-rose-950',
+            'bg-purple-50 border-purple-300 text-purple-950',
+            'bg-orange-50 border-orange-300 text-orange-950'
+        ];
+
+        const darkCardThemes = [
+            'bg-amber-950/50 border-amber-500/40 text-amber-200',
+            'bg-sky-950/50 border-sky-500/40 text-sky-200',
+            'bg-emerald-950/50 border-emerald-500/40 text-emerald-200',
+            'bg-rose-950/50 border-rose-500/40 text-rose-200',
+            'bg-purple-950/50 border-purple-500/40 text-purple-200',
+            'bg-orange-950/50 border-orange-500/40 text-orange-200'
+        ];
+
+        // Generate Random Word
+        function generateWord() {
+            const list = dictionaries[currentLang];
+            let newWord = list[Math.floor(Math.random() * list.length)];
+
+            if (list.length > 1 && newWord === lastWord) {
+                newWord = list[Math.floor(Math.random() * list.length)];
+            }
+            lastWord = newWord;
+
+            renderWordCard(newWord);
+        }
+
+        // Render card into container
+        function renderWordCard(word) {
+            const container = document.getElementById('words-container');
+            container.innerHTML = '';
+
+            const themes = isDarkMode ? darkCardThemes : lightCardThemes;
+            const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+
+            const card = document.createElement('div');
+            card.className = `flex flex-col items-center justify-center border-2 rounded-3xl p-6 sm:p-8 shadow-md transition-all text-center animate-pop ${randomTheme}`;
+
+            card.innerHTML = `
+                <div class="text-3xl sm:text-5xl font-black font-heading tracking-wide leading-tight drop-shadow-sm">
+                    ${word}
+                </div>
+            `;
+
+            container.appendChild(card);
+        }
+
+        // Initialize application on load
+        window.onload = function() {
+            generateWord();
+        };
+    </script>
+</body>
+</html>

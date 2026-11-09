@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Зрозумій мене 🐾</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library for Fireworks -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        h1, h2, h3, .font-heading { font-family: 'Fredoka', cursive, sans-serif; }
+
+        /* Анімації для модального вікна */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes bounceSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+            animation: bounceSlow 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen p-3 sm:p-6 text-slate-100 flex flex-col items-center">
+
+    <!-- Header Section -->
+    <header class="text-center max-w-4xl w-full mb-3">
+        <h1 class="text-3xl sm:text-5xl font-bold text-amber-400 flex items-center justify-center gap-3 drop-shadow-sm">
+            🗺️ Зрозумій мене: 50 Кроків 🐾
+        </h1>
+        <p class="text-slate-400 font-bold text-sm sm:text-base mt-1">
+            Вводь кроки для команд-звірят та змагайся на час! 🚀✨
+        </p>
+    </header>
+
+    <main class="max-w-4xl w-full flex flex-col gap-4">
+
+        <!-- Секція Таймера на 1 хвилину -->
+        <section class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-3 sm:p-4 shadow-lg border-4 border-amber-400/50 flex items-center justify-between text-white">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2.5 rounded-2xl backdrop-blur-sm">
+                    <i class="fa-solid fa-stopwatch text-2xl sm:text-3xl animate-bounce-slow"></i>
+                </div>
+                <div>
+                    <span class="text-xs uppercase font-extrabold tracking-wider text-amber-100 block">Таймер ходу</span>
+                    <span id="timer-display" class="text-2xl sm:text-3xl font-black font-heading tracking-wider">01:00</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleTimer()" id="btn-timer-toggle" class="px-4 py-2 bg-white text-slate-900 hover:bg-amber-50 active:scale-95 rounded-2xl text-xs sm:text-sm font-extrabold shadow-md transition-all flex items-center gap-1.5 border-b-4 border-slate-300">
+                    <i class="fa-solid fa-play" id="timer-icon"></i> <span id="timer-text">Старт</span>
+                </button>
+                <button onclick="resetTimer()" class="px-4 py-2 bg-slate-900 hover:bg-slate-950 active:scale-95 text-white rounded-2xl text-xs sm:text-sm font-extrabold shadow-md transition-all flex items-center gap-1.5 border-b-4 border-slate-700">
+                    <i class="fa-solid fa-rotate-right"></i> Скинути
+                </button>
+            </div>
+        </section>
+
+        <!-- Controles de Equipos -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Команда Зелених (Жабенята) -->
+            <div class="bg-slate-800 border-4 border-emerald-500/50 rounded-3xl p-5 shadow-lg flex flex-col justify-between gap-3 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-black uppercase text-emerald-400 tracking-wider">Команда 1</span>
+                        <h3 class="text-2xl font-extrabold text-emerald-300 font-heading flex items-center gap-2">
+                            🐸 Зелені Жабенята
+                        </h3>
+                    </div>
+                    <div class="bg-slate-900 px-4 py-2 rounded-2xl border-2 border-emerald-500/30 shadow-inner text-center">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase block">Крок</span>
+                        <span id="green-pos" class="text-3xl font-extrabold text-emerald-400 font-heading">0</span>
+                    </div>
+                </div>
+
+                <!-- Entrada Manual de Pasos -->
+                <div class="flex items-center gap-2 pt-2 border-t-2 border-slate-700">
+                    <input type="number" id="input-green" placeholder="Напр: 5 або -2" class="w-full px-4 py-2.5 bg-slate-900 border-2 border-slate-700 rounded-2xl text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 shadow-inner">
+                    <button onclick="applyCustomSteps('green')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:translate-y-1 text-white font-extrabold text-sm rounded-2xl shadow-md border-b-4 border-emerald-800 transition-all flex items-center gap-2 shrink-0">
+                        Вперед 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- Команда Червоних (Лисички) -->
+            <div class="bg-slate-800 border-4 border-rose-500/50 rounded-3xl p-5 shadow-lg flex flex-col justify-between gap-3 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-black uppercase text-rose-400 tracking-wider">Команда 2</span>
+                        <h3 class="text-2xl font-extrabold text-rose-300 font-heading flex items-center gap-2">
+                            🦊 Червоні Лисички
+                        </h3>
+                    </div>
+                    <div class="bg-slate-900 px-4 py-2 rounded-2xl border-2 border-rose-500/30 shadow-inner text-center">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase block">Крок</span>
+                        <span id="red-pos" class="text-3xl font-extrabold text-rose-400 font-heading">0</span>
+                    </div>
+                </div>
+
+                <!-- Entrada Manual de Pasos -->
+                <div class="flex items-center gap-2 pt-2 border-t-2 border-slate-700">
+                    <input type="number" id="input-red" placeholder="Напр: 5 або -2" class="w-full px-4 py-2.5 bg-slate-900 border-2 border-slate-700 rounded-2xl text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 shadow-inner">
+                    <button onclick="applyCustomSteps('red')" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 active:translate-y-1 text-white font-extrabold text-sm rounded-2xl shadow-md border-b-4 border-rose-800 transition-all flex items-center gap-2 shrink-0">
+                        Вперед 🚀
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Grid de 50 Casillas -->
+        <section class="bg-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl border-4 border-slate-700">
+            
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs sm:text-sm font-extrabold text-emerald-400 uppercase tracking-widest bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-xl">🏁 Старт (1)</span>
+                <button onclick="resetBoard()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 active:scale-95 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-200 transition-all flex items-center gap-1.5 shadow-sm border-2 border-slate-600">
+                    <i class="fa-solid fa-rotate-left"></i> Почати знов
+                </button>
+                <span class="text-xs sm:text-sm font-extrabold text-amber-400 uppercase tracking-widest bg-amber-950/60 border border-amber-500/30 px-3 py-1 rounded-xl">Фініш (50) 🏆</span>
+            </div>
+
+            <!-- Matriz de 50 Casillas -->
+            <div id="board-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-2.5">
+                <!-- Se generan dinámicamente las 50 casillas -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Модальне вікно перемоги (Анімація Вітаю та Салют) -->
+    <div id="victory-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-amber-400 shadow-2xl animate-pop relative overflow-hidden">
+            <div class="text-6xl mb-3 animate-bounce-slow" id="winner-emoji">🏆</div>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-amber-400 font-heading mb-2">ВІТАЄМО! 🎉</h2>
+            <p id="winner-message" class="text-slate-200 font-bold text-lg mb-6">
+                Команда дісталася фінішу!
+            </p>
+            <button onclick="closeVictoryModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-extrabold text-lg rounded-2xl shadow-lg border-b-4 border-orange-700 active:scale-95 transition-all">
+                Грати ще раз! 🎈
+            </button>
+        </div>
+    </div>
+
+    <footer class="text-xs font-bold text-slate-500 mt-6 pb-2 text-center">
+        🎈 Веселе дитяче ігрове поле на 50 кроків 🐾
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let greenPosition = 0;
+        let redPosition = 0;
+        let hasWon = false;
+        
+        // Таймер змінна
+        let timerSeconds = 60;
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        // Логіка Таймера
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerSeconds <= 0) resetTimer();
+            isTimerRunning = true;
+            document.getElementById('timer-icon').className = 'fa-solid fa-pause';
+            document.getElementById('timer-text').textContent = 'Пауза';
+            
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    alert('⏰ Час вийшов!');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('timer-icon').className = 'fa-solid fa-play';
+            document.getElementById('timer-text').textContent = 'Старт';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 60;
+            updateTimerDisplay();
+        }
+
+        function createBoard() {
+            const grid = document.getElementById('board-grid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 50; i++) {
+                const cell = document.createElement('div');
+                cell.id = `cell-${i}`;
+                grid.appendChild(cell);
+            }
+            updateBoardUI();
+        }
+
+        // Застосування вписаних кроків
+        function applyCustomSteps(team) {
+            const inputEl = document.getElementById(`input-${team}`);
+            const steps = parseInt(inputEl.value, 10);
+
+            if (isNaN(steps)) return;
+
+            if (team === 'green') {
+                greenPosition = Math.max(0, Math.min(50, greenPosition + steps));
+                document.getElementById('green-pos').textContent = greenPosition;
+            } else {
+                redPosition = Math.max(0, Math.min(50, redPosition + steps));
+                document.getElementById('red-pos').textContent = redPosition;
+            }
+
+            inputEl.value = ''; // Очистити поле після введення
+            updateBoardUI();
+            checkVictory();
+        }
+
+        function updateBoardUI() {
+            for (let i = 1; i <= 50; i++) {
+                const cell = document.getElementById(`cell-${i}`);
+                const isMilestone = i % 10 === 0;
+                const isFinish = i === 50;
+
+                let baseClasses = 'relative aspect-square rounded-2xl border-2 font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-all select-none shadow-sm ';
+
+                if (isFinish) {
+                    cell.className = baseClasses + 'bg-amber-500/20 border-amber-400 text-amber-300 font-extrabold';
+                } else if (isMilestone) {
+                    cell.className = baseClasses + 'bg-slate-700/80 border-slate-600 text-slate-200 font-extrabold';
+                } else {
+                    cell.className = baseClasses + 'bg-slate-900/60 border-slate-700/60 text-slate-400';
+                }
+
+                let cellContent = `<span class="text-[11px] sm:text-xs opacity-75">${i}</span>`;
+                const hasGreen = greenPosition === i;
+                const hasRed = redPosition === i;
+
+                if (hasGreen && hasRed) {
+                    cellContent += `<span class="text-sm sm:text-base leading-none mt-0.5 transform scale-125">🐸🦊</span>`;
+                } else if (hasGreen) {
+                    cellContent += `<span class="text-sm sm:text-base leading-none mt-0.5 transform scale-125">🐸</span>`;
+                } else if (hasRed) {
+                    cellContent += `<span class="text-sm sm:text-base leading-none mt-0.5 transform scale-125">🦊</span>`;
+                } else if (isFinish) {
+                    cellContent = `<span class="text-lg">🏆</span><span class="text-[10px] font-black">50</span>`;
+                }
+
+                cell.innerHTML = cellContent;
+            }
+        }
+
+        function checkVictory() {
+            if (hasWon) return;
+
+            if (greenPosition >= 50 || redPosition >= 50) {
+                hasWon = true;
+                pauseTimer();
+                const modal = document.getElementById('victory-modal');
+                const winnerMessage = document.getElementById('winner-message');
+                const winnerEmoji = document.getElementById('winner-emoji');
+
+                if (greenPosition >= 50 && redPosition >= 50) {
+                    winnerEmoji.textContent = "🐸🎉🦊";
+                    winnerMessage.textContent = "Неймовірно! Перемогла дружба! Зелені Жабенята та Червоні Лисички разом на фініші! 🏆✨";
+                } else if (greenPosition >= 50) {
+                    winnerEmoji.textContent = "🐸🏆";
+                    winnerMessage.textContent = "Ура! Команда Зелених Жабенят першою дісталася фінішу та здобула перемогу! 🐸🎉";
+                } else {
+                    winnerEmoji.textContent = "🦊🏆";
+                    winnerMessage.textContent = "Ура! Команда Червоних Лисичок першою дісталася фінішу та здобула перемогу! 🦊🎉";
+                }
+
+                modal.classList.remove('hidden');
+                triggerFireworks();
+            }
+        }
+
+        // Анімація феєрверків (confetti)
+        function triggerFireworks() {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, {
+                spread: 26,
+                startVelocity: 55,
+            });
+            fire(0.2, {
+                spread: 60,
+            });
+            fire(0.35, {
+                spread: 100,
+                decay: 0.91,
+                scalar: 0.8
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 25,
+                decay: 0.92,
+                scalar: 1.2
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 45,
+            });
+        }
+
+        function closeVictoryModal() {
+            document.getElementById('victory-modal').classList.add('hidden');
+            resetBoard();
+        }
+
+        function resetBoard() {
+            greenPosition = 0;
+            redPosition = 0;
+            hasWon = false;
+            document.getElementById('green-pos').textContent = 0;
+            document.getElementById('red-pos').textContent = 0;
+            document.getElementById('input-green').value = '';
+            document.getElementById('input-red').value = '';
+            resetTimer();
+            updateBoardUI();
+        }
+
+        window.onload = createBoard;
+    </script>
+</body>
+</html>
