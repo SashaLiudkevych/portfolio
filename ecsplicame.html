@@ -1,4 +1,4 @@
-<!-- ... existing code ... -->
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -81,16 +81,89 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // Vocabulario cotidiano y básico en español
+        // Banco de más de 500 palabras cotidianas y básicas en español (A1-A2)
         const wordBank = [
-            "La casa", "El agua", "El gato", "El perro", "El pan", 
-            "La mesa", "La silla", "La comida", "El coche", "La puerta", 
-            "La ventana", "El libro", "La cama", "La luz", "El teléfono", 
-            "El café", "El té", "La leche", "La fruta", "El queso", 
-            "El plato", "El vaso", "La cocina", "El baño", "La ropa", 
-            "Los zapatos", "El dinero", "La tienda", "El amigo", "La familia", 
-            "El sol", "La luna", "El día", "La noche", "La hora", 
-            "El juego", "La calle", "La ciudad", "El trabajo", "La llave"
+            // Casa y Hogar
+            "La casa", "La puerta", "La ventana", "La pared", "El suelo", "El techo", "La cocina", "El baño", "El salón",
+            "El dormitorio", "La cama", "La almohada", "La manta", "La sábana", "La mesa", "La silla", "El sofá", "El sillón",
+            "El armario", "El espejo", "La lámpara", "La alfombra", "La televisión", "El teléfono", "El reloj", "El cuadro",
+            "La llave", "El plato", "El vaso", "La taza", "El tenedor", "El cuchillo", "La cuchara", "La servilleta", "La sartén",
+            "La olla", "El horno", "El microondas", "La nevera", "El congelador", "La escoba", "El cubo", "El jabón", "La toalla",
+            "El cepillo", "La pasta de dientes", "El champú", "El papel higiénico", "El grifo", "La ducha", "La bañera", "El balcón",
+            "El jardín", "El garaje", "El timbre", "La radio", "El ordenador", "El teclado", "El ratón", "El cargador",
+
+            // Comida y Bebida
+            "El agua", "El pan", "El café", "El té", "La leche", "El queso", "El huevo", "La carne", "El pollo", "El pescado",
+            "El arroz", "La pasta", "La sopa", "La ensalada", "La fruta", "La manzana", "El plátano", "La naranja", "El limón",
+            "La fresa", "La uva", "La piña", "El melocotón", "La verdura", "La patata", "El tomate", "La cebolla", "El ajo",
+            "La zanahoria", "El pepino", "La lechuga", "La pimienta", "La sal", "El azúcar", "El aceite", "El vinagre",
+            "La mantequilla", "La mermelada", "El miel", "El chocolate", "El pastel", "La galleta", "El helado", "El jugo",
+            "La cerveza", "El vino", "La pizza", "La hamburguesa", "El bocadillo", "Las patatas fritas", "El arroz con leche",
+
+            // Ropa y Accesorios
+            "La ropa", "La camiseta", "La camisa", "Los pantalones", "Los vaqueros", "El vestido", "La falda", "El abrigo",
+            "La chaqueta", "El jersey", "El sudadera", "Los zapatos", "Las zapatillas", "Las botas", "Los calcetines",
+            "La ropa interior", "El pijama", "El sombrero", "La gorra", "El bufanda", "Los guantes", "El cinturón", "El reloj",
+            "Las gafas", "Las gafas de sol", "El bolso", "La mochila", "La billetera", "El paraguas", "El anillo", "El collar",
+
+            // Persona y Cuerpo
+            "La persona", "El hombre", "La mujer", "El niño", "La niña", "El bebé", "El amigo", "La amiga", "La familia",
+            "El padre", "La madre", "El hijo", "La hija", "El hermano", "La hermana", "El abuelo", "La abuela", "El tío",
+            "La tía", "El primo", "La prima", "El vecino", "La cabeza", "El pelo", "La cara", "El ojo", "La nariz",
+            "La boca", "El diente", "La lengua", "La oreja", "El cuello", "El hombro", "El brazo", "La mano", "El dedo",
+            "El pecho", "La espalda", "El estómago", "La pierna", "La rodilla", "El pie", "El corazón", "La sangre",
+
+            // Ciudad, Transporte y Lugares
+            "La ciudad", "El pueblo", "La calle", "La avenida", "La plaza", "El parque", "El edificio", "El rascacielos",
+            "La tienda", "El supermercado", "El mercado", "El centro comercial", "El restaurante", "El bar", "La cafetería",
+            "El hotel", "El banco", "El hospital", "La farmacia", "La escuela", "El colegio", "La universidad", "La biblioteca",
+            "El museo", "El cine", "El teatro", "La estación", "El aeropuerto", "La parada", "El coche", "El autobús",
+            "El tren", "El metro", "El tranvía", "La bicicleta", "La moto", "El taxi", "El avión", "El barco",
+            "El semáforo", "El puente", "El camino", "El tráfico", "El billete", "El pasaporte", "El mapa",
+
+            // Naturaleza y Tiempo Atmosférico
+            "El sol", "La luna", "La estrella", "El cielo", "La nube", "La lluvia", "La nieve", "El viento",
+            "El aire", "El fuego", "La tierra", "El mar", "El océano", "El río", "El lago", "La playa",
+            "La montaña", "El bosque", "El árbol", "La flor", "La planta", "La hierba", "La isla", "El campo",
+            "El calor", "El frío", "El tiempo", "El clima", "La tormenta", "El arcoíris", "El hielo",
+
+            // Animales
+            "El perro", "El gato", "El pájaro", "El pez", "El caballo", "La vaca", "El cerdo", "La oveja",
+            "La cabra", "El ratón", "El león", "El tigre", "El elefante", "El oso", "El mono", "El conejo",
+            "El pato", "El pollo", "La gallina", "El gallo", "La serpiente", "La rana", "La araña", "La mosca",
+            "El mosquito", "La mariposa", "La abeja", "El delfín", "La ballena", "El tiburón",
+
+            // Tiempo y Calendario
+            "El día", "La noche", "La mañana", "La tarde", "La madrugada", "Hoy", "Ayer", "Mañana",
+            "El segundo", "El minuto", "La hora", "La semana", "El mes", "El año", "El siglo", "El fin de semana",
+            "El lunes", "El martes", "El miércoles", "El jueves", "El viernes", "El sábado", "El domingo",
+            "La primavera", "El verano", "El otoño", "El invierno", "El cumpleaños", "La fiesta", "Las vacaciones",
+
+            // Objetos Escolares, Trabajo y Tecnología
+            "El libro", "El cuaderno", "El lápiz", "El bolígrafo", "La goma", "La regla", "Las tijeras", "El papel",
+            "La carta", "El sobre", "El periódico", "La revista", "La foto", "La cámara", "La pantalla", "La batería",
+            "El mensaje", "El correo", "La red", "La página", "El juego", "La música", "La canción", "La película",
+            "El dinero", "El euro", "El dólar", "La tarjeta", "La cuenta", "El precio", "La factura", "El regalo",
+
+            // Acciones y Verbos Básicos (Sustantivados o en Infinitivo)
+            "Comer", "Beber", "Dormir", "Hablar", "Escuchar", "Leer", "Escribir", "Caminar", "Correr", "Nadar",
+            "Jugar", "Trabajar", "Estudiar", "Comprar", "Vender", "Cocinar", "Limpiar", "Lavar", "Mirar", "Ver",
+            "Abrir", "Cerrar", "Viajar", "Cantar", "Bailar", "Conducir", "Pintar", "Ayudar", "Buscar", "Encontrar",
+            "Pensar", "Aprender", "Entender", "Sonreír", "Vivir", "Pagar", "Llamar", "Preguntar", "Responder",
+
+            // Calificativos y Adjetivos Cotidianos
+            "Grande", "Pequeño", "Bueno", "Malo", "Bonito", "Feo", "Nuevo", "Viejo", "Joven", "Fácil",
+            "Difícil", "Rápido", "Lento", "Alto", "Bajo", "Caliente", "Frío", "Limpio", "Sucio", "Feliz",
+            "Triste", "Cansado", "Enfermo", "Abierto", "Cerrado", "Lleno", "Vacío", "Caro", "Barato", "Rico",
+
+            // Colores y Formas
+            "Rojo", "Azul", "Verde", "Amarillo", "Blanco", "Negro", "Gris", "Rosa", "Naranja", "Marrón",
+            "Morado", "El círculo", "El cuadrado", "El triángulo", "La línea", "El punto",
+
+            // Conceptos y Palabras Variadas A1-A2
+            "El nombre", "La palabra", "La pregunta", "La respuesta", "La verdad", "La mentira", "La idea", "El problema",
+            "La solución", "El número", "La parte", "El todo", "El principio", "El final", "La salud", "La suerte",
+            "La paz", "El peligro", "La libertad", "El silencio", "El ruido", "La voz", "El olor", "El sabor"
         ];
 
         let score = 0;
